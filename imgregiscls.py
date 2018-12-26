@@ -10,8 +10,8 @@ class ImageRegistration(object):
         @.show_lines  特征点之间连线，默认不画（False)；
         @.Hessian_Thresh  Hessian矩阵的阈值，阈值越大能检测的特征就越少   
     """
-    def __init__(self,meth='surf', ratio=0.50, reprojThresh=5.0, show_lines=False, Hessian_Thresh=600):
-        self.method, self.ratio, self.reprojThresh, self.show_lines, self.Hessian_Thresh, =meth, ratio, reprojThresh, show_lines, Hessian_Thresh
+    def __init__(self,meth='surf', ratio=0.50, reprojThresh=5.0, show_lines=False, Hessian_Thresh=700, opti_method='g'):
+        self.method, self.ratio, self.reprojThresh, self.show_lines, self.Hessian_Thresh, self.opti_method =meth, ratio, reprojThresh, show_lines, Hessian_Thresh, opti_method
 
     def registration(self,imgs):
         """
@@ -44,20 +44,20 @@ class ImageRegistration(object):
         # good_match_points绘线
         self.drawMatchesKnn_cv2(img1,img1gray,keypoints_surf_img1,img2,img2gray,keypoints_surf_img2,good_match_points)
         
-        # 透视变换后叠加
+        # 透视变换
         img_joint = cv2.warpPerspective(img2,Mat_trans,(img1.shape[1]+img2.shape[1],max(img1.shape[0],img2.shape[0])))
         temp = img_joint 
-        img_joint[:img1.shape[0],:img1.shape[1]] = img1
-        
-        # 四个角
-        self.left_top,self.left_bottom,self.right_top,self.right_bottom = self.get_corners(img2,Mat_trans)
        
         # 边界优化
-        img_result = self.OptimizeSeam(img1,temp,img_joint)
+        if self.opti_method == 'w':
+            img_joint[:img1.shape[0],:img1.shape[1]] = img1        
+            # 四个角
+            self.left_top,self.left_bottom,self.right_top,self.right_bottom = self.get_corners(img2,Mat_trans)
+            img_result = self.OptimizeSeam(img1,temp,img_joint)
+        elif self.opti_method == 'g':
+            guasslup_list = [img1, temp]
+            img_result = self.guass_lup(guasslup_list)
         return img_result
-        # guasslup_list = [img1, temp]
-        # img_result = self.guass_lup(guasslup_list)
-        # return img_result
 
     def get_matrix_goodmatch(self,keypoints_src,keypoints_dst,desc_src,desc_dst):
         """
@@ -195,12 +195,11 @@ class ImageRegistration(object):
         # 存放拼接后的Lup图,将LeftImg和RightImg的 （高斯N层-N-1层升采样）的差值  进行拼接，存入列表
         # 差值实际就是gauss升采样的处理结果
         LS = [] 
-        for la,lo in zip(lup_LeftImg_pyramid,lup_RightImg_pyramid):
-            rows,cols,dpt = la.shape
+        for lleft,lright in zip(lup_LeftImg_pyramid,lup_RightImg_pyramid):
+            rows,cols,dpt = lleft.shape
             # hstack 和 vstack分别：水平拼接和竖直拼接
-            # ls = np.vstack((la[:rows//2,:],lo[rows//2:,:]))
-            # TODO
-            ls = np.hstack((la[:,:int(0.5*cols)-5],lo[:,int(0.5*cols)-5:]))    
+            # ls = np.vstack((lleft[:rows//2,:],lright[rows//2:,:]))
+            ls = np.hstack((lleft[:,:cols],lright[:,cols:]))    
             LS.append(ls)
 
         ls_ = LS[0] # LS[0]是最小的一张图

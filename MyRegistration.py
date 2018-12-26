@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-# from imgregiscls import ImageRegistration
-from test import ImageRegistration
+from imgregiscls import ImageRegistration
+
 # 读入图片
 img1 = cv2.imread('1.jpg') # 左边的图
 img2 = cv2.imread('2.jpg') # 右边的图,进行透视变换
