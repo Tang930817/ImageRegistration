@@ -14,6 +14,3 @@ imglist = [img1, img2]
 # result = iregis.guass_lup(imglist)
 
 cv2.imwrite('g_img_result.jpg',img_result)
-# cv2.imshow('', img_result)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
