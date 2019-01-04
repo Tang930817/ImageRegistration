@@ -178,7 +178,7 @@ class ImageRegistration(object):
 
     def guass_lup(self,imglist):
         """
-        高斯金字塔优化
+        高斯金字塔融合
         """
         LeftImg, RightImg = imglist[0], imglist[1]
         # 对图像进行金字塔运算前预处理
