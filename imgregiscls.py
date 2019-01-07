@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-
+# 2019/1/7 测试新的SSH
 class ImageRegistration(object):
     """
     默认值：ratio=0.5, reprojThresh=5.0, show_lines=False, Hessian_Thresh=600
